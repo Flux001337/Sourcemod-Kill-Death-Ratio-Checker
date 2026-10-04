@@ -1,0 +1,12 @@
+plugins/
+compiled/
+*.smx
+*.bak
+backups/
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
+.env.*

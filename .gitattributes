@@ -1,0 +1,4 @@
+* text=auto
+*.sp text
+*.inc text
+*.md text eol=lf
