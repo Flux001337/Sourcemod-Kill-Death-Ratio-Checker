@@ -5,7 +5,7 @@
 #include <sourcemod>
 #pragma semicolon 1
 #pragma newdecls required
-#define PLUGIN_VERSION "1.8.0"
+#define PLUGIN_VERSION "1.8.1"
 
 #undef REQUIRE_PLUGIN
 #include <updater>
@@ -17,6 +17,7 @@
 // Declaring variables and handles
 //////////////////////////////////////////////////////////////////
 
+ConVar KDCheckerVersion;
 ConVar KDCheckerEnabled;
 ConVar KDCheckerShowRoundEnd;
 ConVar KDCheckerShowOnKill;
@@ -51,7 +52,8 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	// Create convars
-	CreateConVar("sm_kdrc_version", PLUGIN_VERSION, "KD Kicker Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	// FCVAR_DONTRECORD: AutoExecConfig must not write the version into the cfg file
+	KDCheckerVersion = CreateConVar("sm_kdrc_version", PLUGIN_VERSION, "KD Kicker Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 
 	KDCheckerEnabled          = CreateConVar("sm_kdrc_enable",          "1",    "Enable/Disable KD Checker", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	KDCheckerShowRoundEnd     = CreateConVar("sm_kdrc_show_roundend",   "1",    "Show KD Rate to player on roundend", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -69,6 +71,7 @@ public void OnPluginStart()
 	RegConsoleCmd("say2", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
 	RegConsoleCmd("sm_kdr", ShowKDRateToClientCmd);
+	RegAdminCmd("sm_kdrc_testaction", Command_TestAction, ADMFLAG_ROOT, "Test the configured kick/ban action on yourself");
 
 	// Hook Events
 	HookEvent("round_end", EventRoundEnd);
@@ -93,15 +96,21 @@ public void OnPluginStart()
 
 public void OnAllPluginsLoaded()
 {
-	if (LibraryExists("sourcebans"))
+	if (LibraryExists("sourcebans") || LibraryExists("sourcebans++"))
 	{
 		g_bSBAvailable = true;
 	}
 }
 
+// SourceBans registers "sourcebans", SourceBans++ "sourcebans++"
+bool IsSourceBansLibrary(const char[] name)
+{
+	return StrEqual(name, "sourcebans") || StrEqual(name, "sourcebans++");
+}
+
 public void OnLibraryAdded(const char[] name)
 {
-	if (StrEqual(name, "sourcebans"))
+	if (IsSourceBansLibrary(name))
 	{
 		g_bSBAvailable = true;
 	}
@@ -114,9 +123,9 @@ public void OnLibraryAdded(const char[] name)
 
 public void OnLibraryRemoved(const char[] name)
 {
-	if (StrEqual(name, "sourcebans"))
+	if (IsSourceBansLibrary(name))
 	{
-		g_bSBAvailable = false;
+		g_bSBAvailable = LibraryExists("sourcebans") || LibraryExists("sourcebans++");
 	}
 }
 
@@ -169,13 +178,27 @@ public Action Command_Say(int client, int args)
 
 	}
 
-	// Test the configured action on the calling player without a KDR check.
-	if (strcmp(text[startidx], "kdrselfaction", false) == 0)
-	{
-		KDRateAction(client);
-	}
-
 	return Plugin_Continue;
+}
+
+//////////////////////////////////////////////////////////////////
+// Action: Test the configured action on the calling admin (root only)
+//////////////////////////////////////////////////////////////////
+
+public Action Command_TestAction(int client, int args)
+{
+	if (!IsRealPlayer(client))
+	{
+		ReplyToCommand(client, "[SM] This command requires an in-game player.");
+		return Plugin_Handled;
+	}
+	if (!KDCheckerEnabled.BoolValue)
+	{
+		ReplyToCommand(client, "[SM] KDR Checker is disabled.");
+		return Plugin_Handled;
+	}
+	KDRateAction(client);
+	return Plugin_Handled;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -375,7 +398,7 @@ public Action KDRateAction(int client)
 					"High KD Rate",
 					"You were banned due high KD Rate!",
 					"KDRCheck",
-					client);
+					0);
 			}
 
 			if (GetConVarInt(KDCheckerBanTime) == 0)
@@ -426,6 +449,8 @@ public void ShowKDRNextFrame(any serial)
 
 public void OnConfigsExecuted()
 {
+    // Older cfg files still contain sm_kdrc_version; restore the real version after they ran
+    KDCheckerVersion.SetString(PLUGIN_VERSION);
     RestartCheckTimer();
 }
 

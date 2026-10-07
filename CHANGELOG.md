@@ -2,6 +2,15 @@
 
 Legend: `!` Fix · `+` Addition · `*` Change · `-` Removal
 
+## 1.8.1 (07.10.2026)
+
+- `!` Restrict the self-test of the kick/ban action to root admins: the chat command "kdrselfaction" let every player kick or ban themselves
+- `!` Detect SourceBans++ (library "sourcebans++"); bans previously bypassed its database
+- `!` Record bans by the server instead of the banned player as the banning admin
+- `!` Keep sm_kdrc_version current after updates (no longer written to or restored from the cfg file)
+- `+` Admin command "sm_kdrc_testaction" (root) replaces "kdrselfaction"
+- `-` Remove the chat command "kdrselfaction"
+
 ## 1.8.0 (29.09.2026)
 
 - `!` Fix KD calculation when deaths are zero, including 0 kills / 0 deaths

@@ -1,7 +1,7 @@
 # SourceMod - Kill Death Ratio Checker
 
 SourceMod Plugin for displaying and monitoring player kill/death ratios.
-Current version: **1.8.0**.
+Current version: **1.8.1**.
 
 ## Changelog
 
@@ -14,7 +14,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
 - Optional periodic monitoring with minimum kills and a KDR threshold.
 - Kick or ban when the configured thresholds are met.
 - Optional [Updater](https://forums.alliedmods.net/showthread.php?p=1570806) integration.
-- SourceBans support: when the `sourcebans` library is present, bans use `sm_ban`; otherwise, the plugin uses SourceMod's `BanClient`.
+- SourceBans support: when SourceBans (`sourcebans`) or SourceBans++ (`sourcebans++`) is present, bans use `sm_ban`; otherwise, the plugin uses SourceMod's `BanClient`.
 
 Automatic monitoring is disabled by default. With zero deaths, the KDR is the number of frags; non-positive frags produce a KDR of zero.
 
@@ -37,7 +37,7 @@ Replace `addons/sourcemod/plugins/kdchecker.smx` and reload the plugin or change
 
 | ConVar | Default | Purpose |
 | --- | --- | --- |
-| `sm_kdrc_version` | `1.8.0` | Plugin version |
+| `sm_kdrc_version` | `1.8.1` | Plugin version |
 | `sm_kdrc_enable` | `1` | Enable plugin |
 | `sm_kdrc_show_roundend` | `1` | Show KDR at round end |
 | `sm_kdrc_show_kill` | `0` | Show KDR after a kill |
@@ -55,9 +55,9 @@ Replace `addons/sourcemod/plugins/kdchecker.smx` and reload the plugin or change
 | --- | --- | --- |
 | Chat | `kdr`, `!kdr`, `/kdr` | Show your own kill/death ratio |
 | Player console | `sm_kdr` | Show your own kill/death ratio |
-| Chat | `kdrselfaction` | Test the configured kick or ban action on yourself |
+| Console (root admin) | `sm_kdrc_testaction` | Test the configured kick or ban action on yourself |
 
-The `kdrselfaction` test command It applies the configured kick/ban action to the calling player without checking the KDR threshold or monitoring switch. The main enable switch still applies. Use this command to test the configured player action.
+The `sm_kdrc_testaction` test command requires the root admin flag (`z`). It applies the configured kick/ban action to the calling admin without checking the KDR threshold or monitoring switch. The main enable switch still applies. With `sm_kdrc_watch_action 1` and `sm_kdrc_watch_bantime 0` this bans you permanently.
 
 ## Build
 
